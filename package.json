@@ -1,0 +1,23 @@
+{
+  "name": "massagepack",
+  "version": "0.1.0",
+  "description": "Another MessagePack and JSON codec",
+  "main": "massagepack.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dgoffredo/massagepack.git"
+  },
+  "author": "David Goffredo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dgoffredo/massagepack/issues"
+  },
+  "homepage": "https://github.com/dgoffredo/massagepack#readme",
+  "dependencies": {
+    "int64-buffer": "^1.0.1",
+    "msgpack-lite": "^0.1.26"
+  }
+}
