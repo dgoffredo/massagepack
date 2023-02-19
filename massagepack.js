@@ -2,13 +2,14 @@ const msgpack = require('msgpack-lite');
 // "BE" = "big endian", "LE" = "little endian"
 const {Int64BE, Uint64BE, Int64LE, Uint64LE} = require("int64-buffer");
 
-const msgpackCodec = msgpack.createCodec({int64: true});
 
-function msgpackEncode(value) {
+function msgpackEncode(value, options) {
+    const msgpackCodec = msgpack.createCodec({int64: true, ...options});
     return msgpack.encode(value, {codec: msgpackCodec});
 }
 
-function msgpackDecode(buffer) {
+function msgpackDecode(buffer, options) {
+    const msgpackCodec = msgpack.createCodec({int64: true, ...options});
     return msgpack.decode(buffer, {codec: msgpackCodec});
 }
 
@@ -42,6 +43,10 @@ function transform(value, handlers) {
         throw Error(`unsupported typeof value === ${JSON.stringify(typeof value)} for value: ${value}`);
     }
 
+    if (value instanceof Map) {
+        return new Map(Array.from(value.entries()).map(([key, value]) => [key, transform(value, handlers)]));
+    }
+
     if (isPlainObject(value)) {
         return Object.fromEntries(
             Object.entries(value).map(
@@ -63,9 +68,9 @@ function bigIntToInt64BE(value) {
     }
 }
 
-function encode(value) {
+function encode(value, options = {}) {
     const int64ified = transform(value, {onBigInt: bigIntToInt64BE});
-    return msgpackEncode(int64ified);
+    return msgpackEncode(int64ified, options);
 }
 
 function isInt64(value) {
@@ -81,8 +86,8 @@ function int64ToBigInt(value) {
     return BigInt(value.toString());
 }
 
-function decode(buffer) {
-    const raw = msgpackDecode(buffer);
+function decode(buffer, options = {}) {
+    const raw = msgpackDecode(buffer, options);
     return transform(raw, {
         onSpecialObject: function (value) {
             if (isInt64(value)) {
@@ -104,6 +109,10 @@ function encodeJSON(value) {
         return JSON.stringify(value);
     case 'bigint':
         return value.toString();
+    }
+
+    if (value instanceof Map) {
+        return encodeJSON(Object.fromEntries(value.entries()));
     }
 
     if (isPlainObject(value)) {
